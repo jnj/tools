@@ -75,27 +75,51 @@ class TaskMan
   end
 end
 
+class OggEncodeCommand
+  def initialize(file, dest_dir)
+    @flac_file = file
+    ogg_file = File.join(dest_dir, file.gsub(/\.flac/, '.ogg'))
+    ogg_file_dir = File.dirname(ogg_file)
+    @cmd = "oggenc -Q -q 8 -o '#{ogg_file}' '#{file}'"
+  end
+  
+  attr_reader :cmd
+end
+
+class Mp3EncodeCommand
+  def initialize(file, dest_dir)
+    mp3_file = File.join(dest_dir, file.gsub(/\.flac/, '.mp3'))
+    mp3_file_dir = File.dirname(mp3_file)
+    @cmd = "mkdir -p '#{mp3_file_dir}' && flac --silent -d -c '#{file}' | lame --preset standard --silent - '#{mp3_file}'"
+  end
+  
+  attr_reader :cmd
+end
+
 def usage
   puts "Usage: "
-  puts "#$0 <maxjobs> <dest_dir> <src_dir>+"
+  puts "#$0 <encoder> <maxjobs> <dest_dir> <src_dir>+"
+  puts "   where <encoder> is either ogg or mp3."
 end
 
 if __FILE__ == $0
-  if ARGV.size < 3
+  if ARGV.size < 4
     usage
     exit 1
   end
   
+  encoder_class = OggEncodeCommand
+  if ARGV.shift == 'mp3'
+    encoder_class = Mp3EncoderCommand
+  end
+
   max_jobs = ARGV.shift.to_i
   taskman = TaskMan.new(max_jobs)
   dest_dir = ARGV.shift
 
   ARGV.each do |src_dir|
     Dir[File.join(src_dir, '*.flac')].entries.each do |file|
-      ogg_file = File.join(dest_dir, file.gsub(/\.flac/, '.ogg'))
-      ogg_file_dir = File.dirname(ogg_file)
-      cmd = "oggenc -Q -q 8 -o '#{ogg_file}' '#{file}'"
-      taskman << cmd
+      taskman << encoder_class.new(file, dest_dir).cmd
     end
     
     Dir[File.join(src_dir, '*.jpg')].entries.each do |file|
