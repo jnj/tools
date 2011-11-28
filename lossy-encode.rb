@@ -110,7 +110,7 @@ if __FILE__ == $0
   
   encoder_class = OggEncodeCommand
   if ARGV.shift == 'mp3'
-    encoder_class = Mp3EncoderCommand
+    encoder_class = Mp3EncodeCommand
   end
 
   max_jobs = ARGV.shift.to_i
