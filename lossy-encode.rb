@@ -118,13 +118,18 @@ if __FILE__ == $0
   dest_dir = ARGV.shift
 
   ARGV.each do |src_dir|
+    dir = File.join(dest_dir, src_dir)
+    `mkdir -p '#{dir}'`
+  end
+  
+  ARGV.each do |src_dir|
     Dir[File.join(src_dir, '*.flac')].entries.each do |file|
       taskman << encoder_class.new(file, dest_dir).cmd
     end
     
     Dir[File.join(src_dir, '*.jpg')].entries.each do |file|
       dir = File.join(dest_dir, File.dirname(file))
-      taskman << "mkdir -p '#{dir}' && cp '#{file}' '#{dir}'"
+      taskman << "cp '#{file}' '#{dir}'"
     end
   end
 
