@@ -80,7 +80,7 @@ class OggEncodeCommand
     @flac_file = file
     ogg_file = File.join(dest_dir, file.gsub(/\.flac/, '.ogg'))
     ogg_file_dir = File.dirname(ogg_file)
-    @cmd = "mkdir -p #{dest_dir} && oggenc -Q -q 8 -o '#{ogg_file}' '#{file}'"
+    @cmd = "oggenc -Q -q 8 -o '#{ogg_file}' '#{file}'"
   end
   
   attr_reader :cmd
