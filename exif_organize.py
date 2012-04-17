@@ -2,6 +2,7 @@ import argparse
 import glob
 import os
 import pyexiv2
+import shutil
 import sys
 
 # Say you've got a directory full of images, all with EXIF data, and
@@ -26,7 +27,13 @@ def main(argv):
         date = metadata['Exif.Image.DateTime']
         fmt = '%Y%m%d'
         d = date.value.strftime(fmt)
-        print 'mv %s %s' % (jpgfile, os.path.join(args.outputdir, d, os.path.basename(jpgfile)))
+        newfiledir = os.path.join(args.outputdir, d)
+
+        if not os.path.exists(newfiledir):
+            print 'mkdir %s' % newfiledir
+            os.makedirs(newfiledir)
+        print 'cp %s %s' % (jpgfile, newfiledir)
+        shutil.copy(jpgfile, newfiledir)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
