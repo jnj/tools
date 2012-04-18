@@ -10,9 +10,13 @@ import sys
 # will do that.
 
 def eachjpeg(rootdir):
-    for f in glob.glob(os.path.join(rootdir, '*.*')):
-        if f.lower()[-3:] == 'jpg':
-            yield f
+    for f in os.listdir(rootdir):
+        fullpath = os.path.join(rootdir, f)
+        if os.path.isdir(fullpath):
+            for j in eachjpeg(fullpath):
+                yield j
+        elif os.path.isfile(fullpath) and fullpath[-3:].lower() == 'jpg':
+            yield fullpath
 
 def main(argv):
     parser = argparse.ArgumentParser(description="Organize photos based on EXIF date",
@@ -33,7 +37,8 @@ def main(argv):
             print 'mkdir %s' % newfiledir
             os.makedirs(newfiledir)
         print 'cp %s %s' % (jpgfile, newfiledir)
-        shutil.copy(jpgfile, newfiledir)
+        if not os.path.exists(os.path.join(newfiledir, os.path.basename(jpgfile))):
+            shutil.copy(jpgfile, newfiledir)
 
 if __name__ == "__main__":
     main(sys.argv[1:])
