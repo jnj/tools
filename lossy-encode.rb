@@ -90,7 +90,7 @@ class Mp3EncodeCommand
   def initialize(file, dest_dir)
     mp3_file = File.join(dest_dir, file.gsub(/\.flac/, '.mp3'))
     mp3_file_dir = File.dirname(mp3_file)
-    @cmd = "mkdir -p '#{mp3_file_dir}' && flac --silent -d -c '#{file}' | lame --preset standard --silent - '#{mp3_file}'"
+    @cmd = "flac --silent -d -c '#{file}' | lame -V 0 --silent - '#{mp3_file}'"
   end
   
   attr_reader :cmd
