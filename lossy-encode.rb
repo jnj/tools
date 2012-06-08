@@ -44,7 +44,7 @@ class Worker
         if cmd == :done
           done = true
         else
-          puts "#{self.inspect} [#{cmd}]"
+          puts cmd
           run_cmd(cmd)
         end
       end
@@ -84,6 +84,10 @@ class OggEncodeCommand
   end
   
   attr_reader :cmd
+
+  def to_s
+    cmd
+  end
 end
 
 class Mp3EncodeCommand
@@ -94,6 +98,10 @@ class Mp3EncodeCommand
   end
   
   attr_reader :cmd
+
+  def to_s
+    cmd
+  end
 end
 
 def usage
