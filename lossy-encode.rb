@@ -100,9 +100,6 @@ class Mp3EncodeCommand
 
   def make_tags_options
     tags = get_tags
-    puts "tags:"
-    p tags
-
     { 
       "ARTIST" => "ta",
       "ALBUM" => "tl",
