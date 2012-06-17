@@ -92,11 +92,48 @@ end
 
 class Mp3EncodeCommand
   def initialize(file, dest_dir)
-    mp3_file = File.join(dest_dir, file.gsub(/\.flac/, '.mp3'))
-    mp3_file_dir = File.dirname(mp3_file)
-    @cmd = "flac --silent -d -c '#{file}' | lame -V 0 --silent - '#{mp3_file}'"
+    @flacfile = file
+    tags_options = make_tags_options
+    @mp3_file = File.join(dest_dir, file.gsub(/\.flac/, '.mp3'))    
+    @cmd = "flac --silent -d -c '#{@flacfile}' | lame -V 0 #{tags_options} --silent - '#{@mp3_file}'"
+  end
+
+  def make_tags_options
+    tags = get_tags
+    puts "tags:"
+    p tags
+
+    { 
+      "ARTIST" => "ta",
+      "ALBUM" => "tl",
+      "GENRE" => "tg",
+      "DATE" => "ty",
+      "TITLE" => "tt",
+      "TRACKNUMBER" => "tn"
+    }.inject("") do |s, kvpair|
+      tagname = kvpair[0]
+      optionname = kvpair[1]
+      r = ""
+      if tags.include?(tagname)
+        tagval = tags[tagname]
+        r = "#{s} --#{optionname} '#{tagval}'"
+      end
+      r
+    end
   end
   
+  def get_tags  
+    x = `metaflac --export-tags-to=- \"#{@flacfile}\"`
+    taglines = x.lines
+    taglines.inject({}) do |h, l|
+      m = l.match('([A-Z]+)=(.+)')
+      if m != nil
+        h[m[1]] = m[2]
+      end
+      h
+    end
+  end
+
   attr_reader :cmd
 
   def to_s
