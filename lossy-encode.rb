@@ -75,12 +75,19 @@ class TaskMan
   end
 end
 
+class ShellEscaper
+  def escape(s)
+    return "''" if s.empty?
+    s.gsub(/([^A-Za-z0-9_\-.,:\/@\n])/n, "\\\\\\1")
+  end
+end
+
 class OggEncodeCommand
   def initialize(file, dest_dir)
-    @flac_file = file
-    ogg_file = File.join(dest_dir, file.gsub(/\.flac/, '.ogg'))
-    ogg_file_dir = File.dirname(ogg_file)
-    @cmd = "oggenc -Q -q 8 -o '#{ogg_file}' '#{file}'"
+    @se = ShellEscaper.new
+    ogg_file = @se.escape(File.join(dest_dir, file.gsub(/\.flac/, '.ogg')))
+    flac_file = @se.escape(file)
+    @cmd = "oggenc -Q -q 8 -o #{ogg_file} #{flac_file}"
   end
   
   attr_reader :cmd
@@ -92,10 +99,11 @@ end
 
 class Mp3EncodeCommand
   def initialize(file, dest_dir)
-    @flacfile = file
+    @se = ShellEscaper.new
+    @flacfile = @se.escape(file)
     tags_options = make_tags_options
-    @mp3_file = File.join(dest_dir, file.gsub(/\.flac/, '.mp3'))    
-    @cmd = "flac --silent -d -c '#{@flacfile}' | lame -V 0 #{tags_options} --silent - '#{@mp3_file}'"
+    @mp3_file = @se.escape(File.join(dest_dir, file.gsub(/\.flac/, '.mp3')))
+    @cmd = "flac --silent -d -c #{@flacfile} | lame -V 0 #{tags_options} --silent - #{@mp3_file}"
   end
 
   def make_tags_options
@@ -113,19 +121,19 @@ class Mp3EncodeCommand
       r = ""
       if tags.include?(tagname)
         tagval = tags[tagname]
-        r = "#{s} --#{optionname} '#{tagval}'"
+        r = "#{s} --#{optionname} #{tagval}"
       end
       r
     end
   end
   
   def get_tags  
-    x = `metaflac --export-tags-to=- \"#{@flacfile}\"`
+    x = `metaflac --export-tags-to=- #{@flacfile}`
     taglines = x.lines
     taglines.inject({}) do |h, l|
       m = l.match('([A-Z]+)=(.+)')
       if m != nil
-        h[m[1]] = m[2]
+        h[m[1]] = @se.escape(m[2])
       end
       h
     end
