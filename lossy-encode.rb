@@ -100,9 +100,9 @@ end
 class Mp3EncodeCommand
   def initialize(file, dest_dir)
     @se = ShellEscaper.new
-    @flacfile = @se.escape(file)
-    tags_options = make_tags_options
-    @mp3_file = @se.escape(File.join(dest_dir, file.gsub(/\.flac/, '.mp3')))
+    @flacfile = @se.escape(file).force_encoding('UTF-8')
+    tags_options = make_tags_options.force_encoding('UTF-8')
+    @mp3_file = @se.escape(File.join(dest_dir, file.gsub(/\.flac/, '.mp3'))).force_encoding('UTF-8')
     @cmd = "flac --silent -d -c #{@flacfile} | lame -V 0 #{tags_options} --silent - #{@mp3_file}"
   end
 
