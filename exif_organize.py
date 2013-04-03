@@ -28,7 +28,10 @@ def main(argv):
     for jpgfile in eachjpeg(args.inputdir):
         metadata = pyexiv2.ImageMetadata(jpgfile)
         metadata.read()
-        date = metadata['Exif.Image.DateTime']
+        try:
+            date = metadata['Exif.Image.DateTime']
+        except KeyError, e:
+            print 'Tags not readable in %s' % jpgfile
         fmt = '%Y%m%d'
         d = date.value.strftime(fmt)
         newfiledir = os.path.join(args.outputdir, d)
@@ -36,9 +39,12 @@ def main(argv):
         if not os.path.exists(newfiledir):
             print 'mkdir %s' % newfiledir
             os.makedirs(newfiledir)
-        print 'cp %s %s' % (jpgfile, newfiledir)
-        if not os.path.exists(os.path.join(newfiledir, os.path.basename(jpgfile))):
+        newfilepath = os.path.join(newfiledir, os.path.basename(jpgfile))
+        if not os.path.exists(newfilepath):
+            print 'cp %s %s' % (jpgfile, newfiledir)
             shutil.copy(jpgfile, newfiledir)
+        else:
+            print '%s already exists' % newfilepath
 
 if __name__ == "__main__":
     main(sys.argv[1:])
