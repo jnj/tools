@@ -35,11 +35,12 @@ def eachfile(rootdir, extension):
 
 
 def folder_art(filepath):
-    artfile = os.path.join(os.path.dirname(filepath), 'folder.jpg')
-    if os.path.exists(artfile):
-        return artfile
-    else:
-        return None
+    basenames = ['cover', 'folder']
+    for b in basenames:
+        artfile = os.path.join(os.path.dirname(filepath), '%s.jpg' % b)
+        if os.path.exists(artfile):
+            return artfile
+    return None
 
 
 def config_logging():
