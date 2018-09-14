@@ -11,7 +11,7 @@ class CmdInvoker:
         pass
 
     def call(self, tup):
-        return subprocess.call(tup)
+        return subprocess.check_output(tup)
 
 
 class EchoCmdInvoker:

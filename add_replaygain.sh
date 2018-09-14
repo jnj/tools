@@ -4,29 +4,31 @@ set -e
 
 if [[ "$#" -ne 1 ]]
 then
-    echo "Pass root dir as argument."
+    echo "Pass letter as argument."
     exit 1
 fi
 
-ROOT_DIR="$1"
+LETTER="$1"
 
-pushd "$ROOT_DIR" >/dev/null
-
-for d in */
+for pd in ${LETTER}*/
 do
-    pushd "$d" >/dev/null
-    if ls *.flac >/dev/null
-    then
-        if metaflac --show-tag=REPLAYGAIN_REFERENCE_LOUDNESS 01*flac | grep REPLAYGAIN > /dev/null
+    pushd "$pd"
+    for d in */
+    do
+        echo "checking $d..."
+        pushd "$d" >/dev/null
+        if ls *.flac >/dev/null 2>&1
         then
-            true
-        else
-            echo "writing replaygain metadata for $(pwd)"
-            metaflac --add-replay-gain *.flac
+            if metaflac --show-tag=REPLAYGAIN_REFERENCE_LOUDNESS 01*flac | grep REPLAYGAIN > /dev/null
+            then
+                true
+            else
+                echo "writing replaygain metadata for $(pwd)"
+                metaflac --add-replay-gain *.flac
+            fi
         fi
-    fi
-    popd >/dev/null
+        popd >/dev/null
+    done
+    popd
 done
-
-popd
 
