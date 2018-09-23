@@ -2,6 +2,7 @@ import argparse
 import os
 import glob
 import logging
+import subprocess
 import sys
 
 from flac_embed import CmdInvoker, config_logging
@@ -29,6 +30,7 @@ def add_replaygain(directory):
         cmd.call(cmdline)
 
 
+
 def each_subdir_containing_flacs(root_dir):
     for subfile in os.listdir(root_dir):
         if os.path.isdir(os.path.join(root_dir, subfile)):
@@ -50,7 +52,11 @@ def main():
     config_logging()
 
     for directory in each_subdir_containing_flacs(args.root):
-        add_replaygain(directory)
+        flacs = glob.glob(os.path.join(directory, '*.flac'))
+        tags_output = subprocess.check_output(['metaflac', '--export-tags-to=-', flacs[0]])
+        if 'REPLAY' not in tags_output:
+            add_replaygain(directory)
+
 
 
 if __name__ == '__main__':
