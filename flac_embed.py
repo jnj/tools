@@ -95,11 +95,8 @@ def main(argv):
             logging.info('JPEG|%s' % artfile)
             retcode = clear_art(flacfile, cmd_invoker)
             if retcode != 0:
-                logging.error('FAILURE TO CLEAR ART: %s' % flacfile)
-                continue
+                logging.warn('FAILURE TO CLEAR ART: %s' % flacfile)             
             retcode = set_art(flacfile, artfile, cmd_invoker)
-            if retcode != 0:
-                logging.error('FAILURE TO SET ART: %s' % flacfile)
         else:
             logging.info('no cover art')
         if args.pause:
