@@ -19,20 +19,23 @@ def each_dir(root_path):
                 yield abs_path
 
 
-def check_album_art(album_dir):
+def check_album_art(album_dir, output):
     art_path = os.path.join(album_dir, 'cover.jpg')
     if os.path.exists(art_path) and os.path.isfile(art_path):
         im = Image.open(art_path, 'r')
         w, h = im.size
         if w < 500 or h < 500:
-            print '%s %dx%d' % (art_path, w, h)
+            output.append((art_path, w, h))
 
 
 def main(args):
     parsed_args = parse_args(args)
+    output = []
     for artist_path in each_dir(parsed_args.rootpath):
         for album_path in each_dir(artist_path):
-            check_album_art(album_path)
+            check_album_art(album_path, output)
+    for result in sorted(output, key=lambda t: t[0]):
+        print('%s %dx%d' % result)
 
 
 if __name__ == '__main__':
