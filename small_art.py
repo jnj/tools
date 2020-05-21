@@ -24,10 +24,10 @@ def check_album_art(album_dir, output, size):
     sq = (size, size)
     art_path = os.path.join(album_dir, 'cover.jpg')
     if os.path.exists(art_path) and os.path.isfile(art_path):
-        im = Image.open(art_path, 'r')
-        w, h = im.size
-        if im.size < sq:
-            output.append((art_path, w, h))
+        with Image.open(art_path, 'r') as im:
+            w, h = im.size
+            if im.size < sq:
+                output.append((art_path, w, h))
 
 
 def main(args):
