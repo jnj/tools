@@ -6,21 +6,38 @@ import sys
 from time import sleep
 
 
+class Logger:
+    def __init__(self, quiet):
+        self._quiet = quiet
+
+    def info(self, s):
+        if self._quiet:
+            return
+        logging.info(s)
+
+
 class CmdInvoker:
-    def __init__(self):
-        pass
+    def __init__(self, quiet):
+        self._quiet = quiet
 
     def call(self, tup):
         return subprocess.check_output(tup)
 
+    def is_quiet(self):
+        return self._quiet
+
 
 class EchoCmdInvoker:
-    def __init__(self):
-        pass
+    def __init__(self, quiet):
+        self._quiet = quiet
 
     def call(self, tup):
-        logging.info('command to invoke: "%s"' % str(tup))
+        if not self._quiet:
+            logging.info('command to invoke: "%s"' % str(tup))
         return 0
+
+    def is_quiet(self):
+        return self._quiet
 
 
 def eachfile(rootdir, extension):
@@ -68,8 +85,11 @@ def set_art(filepath, artpath, cmd_invoker):
         descr = ''
         dims = ''  # leave to reader to determine from file
         return '%s|%s|%s|%s|%s' % (typ, mime, descr, dims, artpath)
+
     img_option = '--import-picture-from=%s' % spec()
     metaflac_cmdline = ('metaflac', img_option, filepath)
+    if not cmd_invoker.is_quiet():
+        logging.info("%s %s %s" % metaflac_cmdline)
     retcode = cmd_invoker.call(metaflac_cmdline)
     return retcode
 
@@ -83,24 +103,26 @@ def main(argv):
                            action='store_const', const=True, default=False)
     argparser.add_argument('--pause', help='Pause after each file (2 seconds)',
                            action='store_const', const=True, default=False)
+    argparser.add_argument('--quiet', help='Supress logging output',
+                           action='store_const', const=True, default=False)
     args = argparser.parse_args(argv)
 
     config_logging()
-    cmd_invoker = EchoCmdInvoker() if args.dry else CmdInvoker()
+    logger = Logger(args.quiet)
+    cmd_invoker = EchoCmdInvoker(args.quiet) if args.dry else CmdInvoker(args.quiet)
 
     for flacfile in eachfile(args.root, 'flac'):
-        logging.info('FLAC|' + flacfile)
+        #logger.info('FLAC|' + flacfile)
         artfile = folder_art(flacfile)
         if artfile:
-            logging.info('JPEG|%s' % artfile)
+            #logger.info('JPEG|%s' % artfile)
             retcode = clear_art(flacfile, cmd_invoker)
-            if retcode != 0:
-                logging.warn('FAILURE TO CLEAR ART: %s' % flacfile)             
             retcode = set_art(flacfile, artfile, cmd_invoker)
         else:
-            logging.info('no cover art')
+            logger.info('no cover art')
         if args.pause:
             sleep(3)
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
