@@ -30,7 +30,6 @@ def add_replaygain(directory):
         cmd.call(cmdline)
 
 
-
 def each_subdir_containing_flacs(root_dir):
     for subfile in os.listdir(root_dir):
         if os.path.isdir(os.path.join(root_dir, subfile)):
@@ -42,6 +41,14 @@ def each_subdir_containing_flacs(root_dir):
                     if glob.glob(os.path.join(subsubdir, '*.flac')):
                         yield subsubdir
 
+def all_tagged(flacs, directory):
+    for f in flacs:
+        tags_output = subprocess.check_output(['metaflac', '--export-tags-to=-', f])
+        if 'REPLAY' not in tags_output:
+            logging.info(directory)
+            return False
+    return True
+
 
 def main():
     fmt = argparse.ArgumentDefaultsHelpFormatter
@@ -52,11 +59,9 @@ def main():
     config_logging()
 
     for directory in each_subdir_containing_flacs(args.root):
+        logging.info("checking %s" % directory)
         flacs = glob.glob(os.path.join(directory, '*.flac'))
-        tags_output = subprocess.check_output(['metaflac', '--export-tags-to=-', flacs[0]])
-        if 'REPLAY' not in tags_output:
-            add_replaygain(directory)
-
+        all_tagged(flacs, directory)
 
 
 if __name__ == '__main__':
